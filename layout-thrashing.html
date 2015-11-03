@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Layout Thrashing</title>
+  </head>
+  <body>
+    <h3>Layout Thrashing</h3>
+    <input type="number" id="numberOfItems" name="numberOfItems" value="1000" />
+    <button type="button" id="thrashing" name="thrashing">By Layout Trashing</button>
+    <button type="button" id="readFirstWriteLast" name="readFirstWriteLast">Read First / Write Last</button>
+
+    <ul id="items"></ul>
+
+  </body>
+  <script>
+
+    function thrashing() {
+      var $liElements = document.getElementsByTagName("li"),
+          $liEl = null,
+          actualHeight = null,
+          newHeight = null,
+          i = null;
+
+      for ( i = 0; i < $liElements.length; i++ ) {
+        $liEl = $liElements[ i ];
+
+        // Read
+        actualHeight = $liEl.clientHeight;
+        newHeight = add ? (actualHeight * 2) : (actualHeight / 2);
+
+        // Write (invalida o layout)
+        $liEl.style.height = newHeight + 'px';
+      }
+
+      add = !add;
+    }
+
+    function onReadFirstWriteLast() {
+      requestAnimationFrame( readFirstWriteLast );
+    }
+
+    function readFirstWriteLast() {
+      var $liElements = document.getElementsByTagName("li"),
+          $liEl = null,
+          actualHeight = null,
+          newHeights = [],
+          i = null;
+
+      // Read First
+      for ( i = 0; i < $liElements.length; i++ ) {
+        $liEl = $liElements[ i ];
+
+        actualHeight = $liEl.clientHeight;
+        newHeights[ i ] = add ? (actualHeight * 2) : (actualHeight / 2);
+      }
+      // Write Last
+      for ( i = 0; i < $liElements.length; i++ ) {
+        $liEl = $liElements[ i ];
+
+        $liEl.style.height = newHeights[ i ] + 'px';
+      }
+
+      add = !add;
+    }
+
+    function onCreateItems() {
+      requestAnimationFrame( createItems );
+    }
+
+    function createItems() {
+      var numberOfItems = $numberOfItems.value,
+          $parent = $items.parentElement;
+      $parent.removeChild( $items );
+
+      // remove todos os li's
+      while ($items.firstChild) {
+        $items.removeChild($items.firstChild);
+      }
+
+      for ( var i = 0; i < numberOfItems; i++ ) {
+        var $li = document.createElement("li");
+        $li.appendChild( document.createTextNode("Item " + ( i + 1) ) );
+        $items.appendChild( $li );
+      }
+
+      $parent.appendChild( $items );
+
+      add = true;
+    }
+
+    var add = true,
+        $numberOfItems = document.getElementById("numberOfItems"),
+        $items = document.getElementById("items"),
+        $btnThrashing = document.getElementById("thrashing"),
+        $btnReadFirstWriteLast = document.getElementById("readFirstWriteLast");
+
+    $btnThrashing.addEventListener( "click", thrashing );
+    $btnReadFirstWriteLast.addEventListener( "click", onReadFirstWriteLast );
+    $numberOfItems.addEventListener( "change", onCreateItems );
+
+    createItems();
+
+  </script>
+</html>
